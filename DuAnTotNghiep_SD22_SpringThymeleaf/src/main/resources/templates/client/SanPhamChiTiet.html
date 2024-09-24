@@ -1,0 +1,992 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <title>ShoeSee - Online Store</title>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="author" content="TemplatesJungle">
+    <meta name="keywords" content="Online Store">
+    <meta name="description" content="Stylish - Shoes Online Store HTML Template">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/assets/css/vendor.css}">
+    <link rel="stylesheet" th:href="@{/assets/css/ctsp.css}">
+    <link rel="stylesheet" th:href="@{/assets/css/style.css}">
+    <link rel="icon" type="image/svg+xml"
+          href="https://bizweb.dktcdn.net/100/048/601/themes/734017/assets/index-cate-icon-4.png?1610907247309"/>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chocolat@0.7.0/dist/css/chocolat.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,900;1,900&family=Source+Sans+Pro:wght@400;600;700;900&display=swap"
+          rel="stylesheet">
+    <style>
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: #4CAF50;
+            color: white;
+            padding: 15px;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            display: none;
+            z-index: 1000;
+        }
+
+        .notification .progress-bar {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background-color: #fff;
+            transition: width 3s linear;
+        }
+    </style>
+    <style>
+        .product-slider-container {
+            position: relative;
+            overflow: hidden;
+            width: 100%;
+        }
+
+        .product-slide .price {
+            color: red; /* Màu đỏ cho giá sản phẩm */
+            font-size: 1.2em; /* Kích thước chữ có thể tùy chỉnh */
+        }
+
+        .product-slider {
+            display: flex;
+            transition: transform 0.5s ease-in-out;
+        }
+
+        .product-slide {
+            min-width: calc(100% / 6); /* Hiển thị 6 sản phẩm một hàng */
+            box-sizing: border-box;
+        }
+
+        .product-slide img {
+            width: 100%;
+            display: block;
+        }
+
+        .prev, .next {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background-color: rgba(0, 0, 0, 0.5);
+            color: white;
+            border: none;
+            padding: 10px;
+            cursor: pointer;
+        }
+
+        .prev {
+            left: 10px;
+        }
+
+        .next {
+            right: 10px;
+        }
+
+    </style>
+    <!--    splq-->
+    <style>
+        .product-container {
+            position: relative;
+            margin-bottom: 5px;
+            margin-right: 5px;
+        }
+
+        .product-card {
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            padding: 10px;
+            position: relative;
+            overflow: hidden;
+            z-index: 1; /* Đảm bảo nút không bị che bởi sản phẩm */
+        }
+
+        .product-image {
+            width: 100%;
+            height: auto;
+            border-radius: 8px;
+        }
+
+        .xem-ngay-btn {
+            background-color: transparent;
+            color: black;
+            opacity: 0.8;
+        }
+
+        .xem-ngay-btn:hover {
+            background-color: rgba(0, 0, 0, 0.1); /* Màu xám nhạt */
+            opacity: 1;
+        }
+
+        .product-card:hover {
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); /* Tạo bóng đổ */
+            border-color: #f77f00;
+            transform: translateY(-10px);
+        }
+
+        .disabled {
+            pointer-events: none; /* Prevents clicking */
+            opacity: 0.5; /* Makes the button look disabled */
+            cursor: not-allowed; /* Changes the cursor to indicate disabled state */
+        }
+
+
+    </style>
+</head>
+
+<body>
+<div th:replace="~{client/fragmentsClient/header :: header}"></div>
+
+<section id="latest-products" class="product-store py-2 my-2 py-md-5 my-md-5 pt-0" style="background-color: #F5F5F5">
+    <div class="container-md">
+        <div class="row d-flex" id="products-list">
+            <div class=" d-flex">
+                <div id="anh" class="col-md-6"></div>
+                <div class="col-md-6">
+                    <div class="col-md-12 ">
+                        <div id="ten"></div>
+                        <div class="d-flex" style="size: 80px; margin-top: 5px;margin-bottom: 5px;">
+                            <p style=" font-weight: bold; font-size: 40px"></p>
+                            <p class="col-md-2" style="margin-top: 15px"><strong> Giá : </strong></p>
+                            <div class="col-md-10" id="gia" style="size: 80px;"></div>
+                        </div>
+                    </div>
+                    <div class="mausize">
+                        <div class="d-flex">
+                            <p class="col-md-2" style="margin-top: 30px"><strong> Màu : </strong></p>
+                            <div id="mau" class="col-md-10"></div>
+
+                        </div>
+                        <p class="validatemau">Vui Lòng chọn màu</p>
+                        <div class="d-flex">
+                            <p class="col-md-2" style="margin-top: 30px"><strong>Kích Thước :</strong></p>
+                            <div id="size" class="col-md-10" style="margin-bottom: 5px"></div>
+
+                        </div>
+                        <p class="validatesize">Vui Lòng chọn Kích Thước</p>
+
+                    </div>
+
+                    <div id="sl" class="col-md-12 d-flex">
+                        <p class="col-md-2"><strong>Số Lượng :</strong></p>
+                        <div class="d-flex col-md-4" id="nutsl">
+                            <button class="lui btn btn-light">-</button>
+                            <input class="text-center btn btn-light" type="text" id="quantity" value="1" min="1"
+                                   style="width: 100px">
+                            <button class="tang btn btn-light">+</button>
+                        </div>
+                        <div id="soluongton" class="col-md-6" style="margin-top:5px  "></div>
+                    </div>
+                    <br>
+                    <div id="mua">
+                        <button class="btn btn-danger" id="muangay">Mua Ngay</button>
+                        <button class="btn btn-outline-warning" id="themgiohang">
+                            <i class="bi bi-cart"></i> Thêm Giỏ Hàng
+                        </button>
+                    </div>
+                    <br>
+                    <br>
+                    <div>
+                        <p><strong>Mô Tả :</strong></p>
+                        <p id="mota"></p>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+</section>
+<section id="splienquan" class="product-store py-2 my-2 py-md-5 my-md-5 pt-0 text-center"
+         style="background-color: #F5F5F5">
+    <a class="section-title text-uppercase"
+       style="display: block; margin-bottom: 10px; font-size: 20px; padding-bottom: 10px; margin-left: 10px; color: #808080;">Sản
+        phẩm liên quan</a>
+    <div class="product-slider-container">
+        <div class="product-slider">
+
+        </div>
+        <button class="prev"><</button>
+        <button class="next">></button>
+    </div>
+</section>
+
+<div id="notification" class="notification">
+    Đã thêm vào giỏ hàng !
+    <div id="progress-bar" class="progress-bar"></div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/jarallax@1.12.0/dist/jarallax.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jarallax@1.12.0/dist/jarallax-video.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(function () {
+        const path = window.location.pathname;
+        const pathParts = path.split('/');
+        const sanPhamId = pathParts[pathParts.length - 1];
+        let slconlai;
+        let inputElement = document.getElementById('quantity');
+        let soluongspkhithem = inputElement.value;
+        let lastClickedSize = null;
+        let currentAjaxRequest = null;
+        let cart = JSON.parse(sessionStorage.getItem('cart')) || [];
+        var count = cart.length ? cart.length : 0;
+        document.getElementById('cart-count').textContent = count;
+        function validateQuantity() {
+            let $quantityInput = $('#quantity');
+            let currentQuantity = parseInt($quantityInput.val(), 10);
+            let minQuantity = parseInt($quantityInput.attr('min'), 10);
+
+
+            let maxQuantity = slconlai;
+
+            if (isNaN(currentQuantity) || currentQuantity < minQuantity) {
+                $quantityInput.val(minQuantity);
+            } else if (currentQuantity > maxQuantity) {
+                $quantityInput.val(maxQuantity);
+            }
+        }
+
+
+        $('#quantity').on('input blur', validateQuantity);
+
+
+        if (!sanPhamId) {
+            $('#products-list').append('<p>Không có ID sản phẩm.</p>');
+            return;
+        }
+
+        getKhachHang();
+
+        function getDuLieuGioHangVaGioHangChiTiet(idKhachHang) {
+            $.ajax({
+                url: `/api/gio-hang/detail/${idKhachHang}`,
+                method: 'GET',
+                success: function (response) {
+                    const gioHangChiTiet = response.ghct;
+                    const  gioHang = response.gh
+
+                    var count = gioHangChiTiet.length ? gioHangChiTiet.length : 0;
+                    document.getElementById('cart-count').textContent = count;
+
+                },
+            });
+
+        }
+
+        function getKhachHang() {
+            $.ajax({
+                url: '/api/session/user',
+                method: 'GET',
+                success: function (response) {
+                    let idKhachHang = response.id;
+                    getDuLieuGioHangVaGioHangChiTiet(idKhachHang);
+                },
+            });
+        }
+
+
+        $.ajax({
+            url: `/sanphamchitietclien/${sanPhamId}`,
+            method: 'GET',
+            dataType: 'json',
+            success: function (data) {
+
+                const productsContainer = $('#mau');
+                const anhsp = $('#anh');
+                const sizesp = $('#size');
+                const motasp = $('#mota');
+
+                const ten = $('#ten');
+                const gia = $('#gia');
+                const sltonsp = $('#soluongton');
+                var sizecheck;
+                var anhcheck;
+
+                document.getElementById('themgiohang').addEventListener('click', function () {
+                    if (anhcheck == null && sizecheck == null) {
+                        var validateSizeP = document.querySelector('.validatemau');
+                        validateSizeP.style.display = 'block';
+                        validateSizeP.style.color = 'red';
+                        var validateSizeP = document.querySelector('.validatesize');
+                        validateSizeP.style.display = 'block';
+                        validateSizeP.style.color = 'red';
+                    }
+                });
+                document.getElementById('muangay').addEventListener('click', function () {
+                    if (anhcheck == null && sizecheck == null) {
+                        var validateSizeP = document.querySelector('.validatemau');
+                        validateSizeP.style.display = 'block';
+                        validateSizeP.style.color = 'red';
+                        var validateSizeP = document.querySelector('.validatesize');
+                        validateSizeP.style.display = 'block';
+                        validateSizeP.style.color = 'red';
+                    }
+                });
+                productsContainer.empty();
+                $('.tang').on('click', function () {
+
+                    let quantityInput = $('#quantity');
+                    let currentQuantity = parseInt(quantityInput.val(), 10);
+                    let maxQuantity = slconlai;
+
+
+                    if (currentQuantity >= maxQuantity) {
+                        quantityInput.val(maxQuantity);
+                    } else {
+                        quantityInput.val(currentQuantity + 1);
+                    }
+                });
+
+                $('.lui').on('click', function () {
+                    let quantity = document.getElementById('quantity');
+
+                    if (quantity.value > 1) {
+                        quantity.value = parseInt(quantity.value) - 1;
+                    }
+                })
+                if (data && typeof data === 'object' && data.id) {
+                    const productName = data.ten || 'Không có tên';
+                    const nsx = data.nhaSanXuat
+                    const thuonghieu = data.tenThuongHieu
+                    const chatLieu = data.chatLieu
+                    const deGiay = data.deGiay
+                    const coGiay = data.coGiay
+                    const mota = data.moTa
+                    const idsp = data.sanPham
+
+                    const productPrice = data.giaBan != null ? data.giaBan.toLocaleString('vi-VN', {
+                        style: 'currency',
+                        currency: 'VND'
+                    }) : 'Không có giá';
+                    const productImage = data.anh ? `${data.anh}` : 'path/to/default-image.jpg';
+
+
+                    const mainImage = $(`
+                    <img src="${productImage}" alt="Product Image" style="width: 500px; height: 500px; ">
+                `);
+                    const tensp = $(`
+                            <div>
+                            <p class="card-title" style=" font-size:45px;color: #333; margin-top: 10px;">${productName}</p>
+
+                            </div>
+
+                `);
+                    const giasp = $(`
+
+                            <p class="product-price" style="font-size: 30px;color: #d9534f; margin-bottom: 10px;">${productPrice}</p>
+
+                `);
+                    const Mota = $(`
+
+                            <p>${mota}</p>
+                              <br>
+                             <p><strong>Thương Hiệu :</strong></p>
+                            <p id="th" class="card-title" style=" font-size:15px;color: #333; margin-top: 10px;">${thuonghieu}</p>
+                            <br>
+                            <p><strong>Nhà Sản Xuất :</strong></p>
+                            <p id="th" class="card-title" style=" font-size:15px;color: #333; margin-top: 10px;">${nsx}</p>
+                             <br> <p> <strong>Chất liệu :</strong></p>
+                            <p class="card-title" style=" font-size:15px;color: #333; margin-top: 10px;">${chatLieu}</p>
+
+
+                             <br><p><strong>Đế Giày :</strong></p>
+                            <p class="card-title" style=" font-size:15px;color: #333; margin-top: 10px;">${deGiay}</p>
+                            <br> <p><strong>Cổ Giày :</strong></p>
+                            <p class="card-title" style=" font-size:15px;color: #333; margin-top: 10px;">${coGiay}</p>
+
+
+
+                `);
+
+                    motasp.append(Mota);
+                    anhsp.append(mainImage);
+                    ten.append(tensp);
+                    gia.append(giasp);
+
+
+                    const additionalImagesDiv = $('<div class="additional-images"></div>');
+
+                    const slider = document.querySelector('.product-slider');
+                    const prevButton = document.querySelector('.prev');
+                    const nextButton = document.querySelector('.next');
+                    const slidesPerPage = 6;
+                    let currentIndex = 0;
+
+                    function updateSlider() {
+                        const offset = -currentIndex * (100 / slidesPerPage);
+                        slider.style.transform = `translateX(${offset}%)`;
+                    }
+
+                    function showNext() {
+                        if (currentIndex < slider.children.length - slidesPerPage) {
+                            currentIndex++;
+                            updateSlider();
+                        }
+                    }
+
+                    function showPrev() {
+                        if (currentIndex > 0) {
+                            currentIndex--;
+                            updateSlider();
+                        }
+                    }
+
+                    prevButton.addEventListener('click', showPrev);
+                    nextButton.addEventListener('click', showNext);
+
+                    function loadProducts() {
+                        const xhr = new XMLHttpRequest();
+                        xhr.open('GET', `/san-pham-lienquan/${thuonghieu}`, true);
+                        xhr.onload = function () {
+                            if (xhr.status >= 200 && xhr.status < 300) {
+                                try {
+                                    const response = JSON.parse(xhr.responseText);
+                                    const products = response.sanPham || [];
+                                    renderProducts(products);
+                                } catch (e) {
+                                }
+                            } else {
+                            }
+                        };
+                        xhr.onerror = function () {
+                        };
+                        xhr.send();
+                    }
+
+                    function renderProducts(products) {
+                        slider.innerHTML = '';
+                        products.forEach(product => {
+                            const slide = document.createElement('div');
+                            slide.className = 'product-slide';
+                            const gia = new Intl.NumberFormat('vi-VN', {
+                                style: 'currency',
+                                currency: 'VND'
+                            }).format(product.giaBan);
+                            slide.innerHTML = `
+                            <div class="product-container" style="position: relative; margin-bottom: 5px; margin-right:5px;border-color: #f77f00;">
+                                <div class="bg-white product-card" style=" padding: 10px; transition: transform 0.3s ease, box-shadow 0.3s ease; background-color: #E8E8E8;">
+                                    <img src="${product.anh}" class="product-image" style="width: 230px; height: 250px;">
+                                    <p class="status"></p>
+                                    <div class="d-block text-start" style="padding: 10px 0 0 0;">
+                                        <h5 class="card-title" style="color: #333; margin-top: 10px; margin-left: 15px; text-decoration: none;">${product.ten}</h5>
+                                        <a href="#" style="display: inline-block; margin: 5px 0; padding: 2px 5px; border: 1px solid #FF8C00; border-radius: 2px; color: #FF8C00; text-decoration: none; font-size: 10px; background-color: transparent; text-align: center; margin-left: 15px;">
+                                            Giá Siêu Hời
+                                        </a>
+                                        <a href="#" class="product-price card-text" style="font-size: 17px; color: #d9534f; margin-left: 15px; margin-bottom: 10px; display: block; text-decoration: none;">
+                                            ${gia}
+                                        </a>
+                                    </div>
+                                </div>
+
+`;
+                            slide.addEventListener('click', () => {
+                                window.location.href = `/san-pham/${product.id}`;
+                            });
+                            slider.appendChild(slide);
+                        });
+
+                        updateSlider();
+                    }
+
+
+                    loadProducts();
+                    $.ajax({
+                        url: `/sanphamchitietclientanh/${idsp}`,
+                        method: 'GET',
+                        dataType: 'json',
+                        success: function (additionalData) {
+                            const additionalImages = additionalData || [];
+
+                            additionalImages.forEach(img => {
+                                const imageName = img;
+
+                                const additionalImageDiv = $(`
+                                <div>
+                                    <img src="${img}" alt="Additional Product Image" data-name="${imageName}">
+                                </div>
+                            `);
+                                additionalImagesDiv.append(additionalImageDiv);
+                            });
+
+
+                            productsContainer.append(additionalImagesDiv);
+
+
+                            $('.additional-images img').on('click', function () {
+                                $('.additional-images img').removeClass('selected-image');
+
+                                sizecheck = null;
+
+                                var validateSizeP = document.querySelector('.validatesize');
+                                validateSizeP.style.display = 'none';
+                                sltonsp.empty();
+                                $(this).addClass('selected-image');
+                                document.getElementById('themgiohang').addEventListener('click', function () {
+                                    if (sizecheck == null) {
+                                        var mausizeDiv = document.querySelector('.mausize');
+                                        mausizeDiv.style.display = 'block';
+
+                                        var validateSizeP = document.querySelector('.validatesize');
+                                        validateSizeP.style.display = 'block';
+                                        validateSizeP.style.color = 'red';
+                                    } else {
+
+                                    }
+
+                                });
+                                document.getElementById('muangay').addEventListener('click', function () {
+                                    if (sizecheck == null) {
+                                        var mausizeDiv = document.querySelector('.mausize');
+                                        mausizeDiv.style.display = 'block';
+
+                                        var validateSizeP = document.querySelector('.validatesize');
+                                        validateSizeP.style.display = 'block';
+                                        validateSizeP.style.color = 'red';
+                                    } else {
+
+                                    }
+
+                                });
+
+                                const imageName = $(this).data('name');
+                                if (imageName != null) {
+                                    var validateSizeP = document.querySelector('.validatemau');
+                                    validateSizeP.style.display = 'none';
+                                    validateSizeP.style.color = 'red';
+                                }
+                                const sizemau = "";
+                                anhcheck = imageName;
+                                gia.empty();
+                                anhsp.empty();
+                                const mainImage = $(`
+                                  <img src="${imageName}" alt="Product Image" style="width: 500px; height: 500px;">
+                                     `);
+                                anhsp.append(mainImage);
+
+                                $('.size-container').remove();
+
+                                $.ajax({
+                                    url: `/kichco/${idsp}`,
+                                    method: 'GET',
+                                    data: {anh: encodeURIComponent(imageName)},
+                                    dataType: 'json',
+                                    success: function (sizes) {
+                                        const sizegia = sizes[0];
+                                        $.ajax({
+                                            url: `/gia-ban/${idsp}/${sizegia}`,
+                                            method: 'GET',
+                                            data: {anh: encodeURIComponent(imageName)},
+                                            dataType: 'json',
+                                            success: function (giaanh) {
+                                                const giakhichonanh = giaanh != null ? giaanh.toLocaleString('vi-VN', {
+                                                    style: 'currency',
+                                                    currency: 'VND'
+                                                }) : 'Không có giá';
+                                                const giaspanh = $(`
+
+                                                          <hp class="product-price" style="font-size: 30px; color: #d9534f; margin-bottom: 10px;">${giakhichonanh}</hp>
+
+                                                             `);
+                                                gia.append(giaspanh);
+                                            },
+                                            error: function (xhr, status, error) {
+                                                console.error('Lỗi khi lấy dữ liệu kích cỡ:', error);
+                                            }
+                                        });
+
+                                        const sizeDiv = $('<div class="size-container"></div>');
+                                        sizes.forEach(size => {
+                                            const sizeElement = $(`
+
+                                            <p class="sizekhichon">${size}</p>
+                                        `);
+                                            sizeDiv.append(sizeElement);
+                                        });
+
+
+                                        sizesp.append(sizeDiv);
+                                        $('.size-container p').on('click', function () {
+                                            const $this = $(this);
+                                            const selectedSize = $this.text();
+
+
+                                            if (lastClickedSize === selectedSize) {
+                                                return;
+                                            }
+
+                                            // Update selected size and UI
+                                            $('.size-container p').removeClass('selected-size');
+                                            $this.addClass('selected-size');
+
+                                            // Reset variables and UI elements
+                                            soluongspkhithem = 0;
+                                            sizecheck = selectedSize;
+
+                                            var validateSizeP = document.querySelector('.validatesize');
+                                            validateSizeP.style.display = 'none';
+                                            sltonsp.empty();
+                                            gia.empty();
+
+                                            // Cancel previous AJAX request if it exists
+                                            if (currentAjaxRequest) {
+                                                currentAjaxRequest.abort();
+                                            }
+
+                                            // Perform AJAX request to get stock information
+                                            currentAjaxRequest = $.ajax({
+                                                url: `/SLton/${idsp}/${selectedSize}`,
+                                                method: 'GET',
+                                                data: {anh: encodeURIComponent(imageName)},
+                                                dataType: 'json',
+                                                success: function (sl) {
+                                                    var slch = sl[0];
+                                                    const color = slch === 0 ? '#ff0000' : '#000000';
+                                                    const opacity = slch === 0 ? '1' : '0.5';
+                                                    const text = slch === 0 ? 'Hết hàng' : `${sl} sản phẩm có sẵn`;
+
+                                                    const slton = $(`
+                                                                    <div>
+                                                                        <p class="product-price" style="font-size: 17px; color: ${color}; margin-bottom: 10px; opacity: ${opacity}; margin-left: 10px">
+                                                                            ${text}
+                                                                        </p>
+                                                                    </div>
+`)
+                                                    slconlai = sl;
+                                                    sltonsp.append(slton);
+                                                    var slch = sl[0];
+                                                    if (slch === 0) {
+                                                        $('#themgiohang').addClass('disabled');
+                                                        $('#muangay').addClass('disabled');
+                                                        $('#nutsl').addClass('disabled');
+
+
+                                                    } else {
+                                                        $('#themgiohang').removeClass('disabled');
+                                                        $('#muangay').removeClass('disabled');
+                                                        $('#nutsl').removeClass('disabled');
+
+                                                    }
+
+                                                    // Add event listener for "Thêm vào giỏ hàng"
+                                                    $('#themgiohang').off('click').on('click', function () {
+                                                        if (sizecheck == null) {
+                                                            return;
+                                                        }
+
+                                                        $.ajax({
+                                                            url: '/api/session/user',
+                                                            method: 'GET',
+                                                            success: function (response) {
+                                                                if (response.status === 404) {
+                                                                    return;
+                                                                }
+
+                                                                let idKhachHang = response.id;
+                                                                let inputElement = document.getElementById('quantity');
+                                                                soluongspkhithem = inputElement.value;
+                                                                anhlayve = imageName;
+                                                                let size = selectedSize;
+
+
+                                                                $.ajax({
+                                                                    url: `/detailcheckgh/${idKhachHang}/${size}/${idsp}/${soluongspkhithem}`,
+                                                                    type: 'GET',
+                                                                    data: {anhlayve: encodeURIComponent(anhlayve)},
+                                                                    success: function (response) {
+                                                                        var notification = document.getElementById('notification');
+                                                                        var progressBar = document.getElementById('progress-bar');
+
+                                                                        notification.style.display = 'block';
+                                                                        progressBar.style.width = '100%';
+
+                                                                        setTimeout(function () {
+                                                                            progressBar.style.width = '0';
+                                                                        }, 10);
+
+                                                                        setTimeout(function () {
+                                                                            notification.style.display = 'none';
+                                                                            progressBar.style.width = '100%';
+                                                                        }, 3010);
+
+                                                                        let sptam = response;
+                                                                        getKhachHang();
+                                                                    },
+                                                                    error: function (xhr, status, error) {
+                                                                        console.error('Error:', error);
+                                                                    }
+                                                                });
+                                                            },
+                                                            error: function (xhr, status, error) {
+                                                                soluongspkhithem = inputElement.value;
+                                                                anhlayve = imageName;
+                                                                let size = selectedSize;
+
+                                                                $.ajax({
+                                                                    url: `/checksp/${size}/${idsp}`,
+                                                                    type: 'GET',
+                                                                    data: {anhlayve: encodeURIComponent(anhlayve)},
+                                                                    success: function (spp) {
+                                                                        const product = {
+                                                                            id: spp.id,
+                                                                            anhspmoi: spp.anh,
+                                                                            quantity: soluongspkhithem,
+                                                                            quantitymax: spp.soLuong,
+                                                                            tenspmoi: spp.ten,
+                                                                            size: spp.kichCo.ten,
+                                                                            giabansp: spp.giaBan
+                                                                        };
+
+                                                                        function thongbao() {
+                                                                            var notification = document.getElementById('notification');
+                                                                            var progressBar = document.getElementById('progress-bar');
+
+                                                                            notification.style.display = 'block';
+                                                                            progressBar.style.width = '100%';
+
+                                                                            setTimeout(function () {
+                                                                                progressBar.style.width = '0';
+                                                                            }, 10);
+
+                                                                            setTimeout(function () {
+                                                                                notification.style.display = 'none';
+                                                                                progressBar.style.width = '100%';
+                                                                            }, 3010);
+                                                                        }
+
+
+                                                                        const existingProductIndex = cart.findIndex(item => item.id === product.id);
+                                                                        if (existingProductIndex > -1) {
+                                                                            let sluonsptrung = cart[existingProductIndex].quantity;
+                                                                            const quantityToAdd = parseFloat(sluonsptrung) + parseFloat(product.quantity);
+                                                                            if (quantityToAdd > product.quantitymax) {
+                                                                                cart[existingProductIndex].quantity = product.quantitymax;
+                                                                                thongbao();
+                                                                            } else {
+                                                                                cart[existingProductIndex].quantity = quantityToAdd;
+                                                                                thongbao();
+                                                                            }
+
+                                                                        } else {
+                                                                            thongbao();
+                                                                            cart.push(product);
+
+                                                                        }
+                                                                        sessionStorage.setItem('cart', JSON.stringify(cart));
+                                                                        var count = cart.length ? cart.length : 0;
+                                                                        document.getElementById('cart-count').textContent = count;
+                                                                        displayCart();
+
+                                                                        function displayCart() {
+                                                                            const cart = JSON.parse(sessionStorage.getItem('cart')) || [];
+                                                                            cart.forEach(item => {
+                                                                            });
+                                                                        }
+                                                                    },
+                                                                    error: function (xhr, status, error) {
+                                                                        console.error('Error:', error);
+                                                                    }
+                                                                });
+                                                            }
+                                                        });
+                                                    });
+
+                                                    // Add event listener for "Mua ngay"
+                                                    $('#muangay').off('click').on('click', function () {
+                                                        if (sizecheck == null) {
+                                                            return;
+                                                        }
+
+                                                        $.ajax({
+                                                            url: '/api/session/user',
+                                                            method: 'GET',
+                                                            success: function (response) {
+                                                                soluongspkhithem = inputElement.value;
+                                                                anhlayve = imageName;
+                                                                let size = selectedSize;
+
+                                                                let selectedProducts = JSON.parse(localStorage.getItem('selectedProducts')) || [];
+                                                                selectedProducts = [];
+
+                                                                localStorage.setItem('selectedProducts', JSON.stringify(selectedProducts));
+                                                                $.ajax({
+                                                                    url: `/checksp/${size}/${idsp}`,
+                                                                    type: 'GET',
+                                                                    data: {anhlayve: encodeURIComponent(anhlayve)},
+                                                                    success: function (spp) {
+                                                                        const product = {
+                                                                            sanPhamChiTiet : spp,
+                                                                            id: spp.id,
+                                                                            anhspmoi: spp.anh,
+                                                                            soLuong: soluongspkhithem,
+                                                                            tenspmoi: spp.ten,
+                                                                            size: spp.kichCo.ten,
+                                                                            giabansp: spp.giaBan
+                                                                        };
+                                                                        selectedProducts.push(product);
+                                                                        localStorage.setItem('selectedProducts', JSON.stringify(selectedProducts));
+
+                                                                    },
+                                                                    error: function (xhr, status, error) {
+                                                                        console.error('Error:', error);
+                                                                    }
+                                                                });
+                                                                window.location.href = `/cho-thanh-toan`;
+                                                            },
+                                                            error: function (xhr, status, error) {
+                                                                soluongspkhithem = inputElement.value;
+                                                                anhlayve = imageName;
+                                                                let size = selectedSize;
+
+                                                                let selectedProducts = JSON.parse(localStorage.getItem('selectedProducts')) || [];
+                                                                selectedProducts = [];
+
+                                                                localStorage.setItem('selectedProducts', JSON.stringify(selectedProducts));
+                                                                $.ajax({
+                                                                    url: `/checksp/${size}/${idsp}`,
+                                                                    type: 'GET',
+                                                                    data: {anhlayve: encodeURIComponent(anhlayve)},
+                                                                    success: function (spp) {
+                                                                        const product = {
+                                                                            id: spp.id,
+                                                                            anhspmoi: spp.anh,
+                                                                            quantity: soluongspkhithem,
+                                                                            quantitymax: spp.soLuong,
+                                                                            tenspmoi: spp.ten,
+                                                                            size: spp.kichCo.ten,
+                                                                            giabansp: spp.giaBan
+                                                                        };
+                                                                        selectedProducts.push(product);
+                                                                        localStorage.setItem('selectedProducts', JSON.stringify(selectedProducts));
+
+                                                                    },
+                                                                    error: function (xhr, status, error) {
+                                                                        console.error('Error:', error);
+                                                                    }
+                                                                });
+                                                                window.location.href = `/cho-thanh-toan`;
+                                                            }
+                                                        });
+                                                    });
+                                                },
+                                                error: function (xhr, status, error) {
+                                                    console.error('Lỗi khi lấy dữ liệu kích cỡ:', error);
+                                                }
+                                            });
+
+
+                                            $.ajax({
+                                                url: `/gia-ban/${idsp}/${selectedSize}`,
+                                                method: 'GET',
+                                                data: {anh: encodeURIComponent(imageName)},
+                                                dataType: 'json',
+                                                success: function (giaban) {
+                                                    const giakhichonsize = giaban != null ? giaban.toLocaleString('vi-VN', {
+                                                        style: 'currency',
+                                                        currency: 'VND'
+                                                    }) : 'Không có giá';
+                                                    const giaspsize = $(`
+                                                       <p class="product-price" style="font-size: 30px; color: #d9534f; margin-bottom: 10px;">${giakhichonsize}</p>
+                                                      `);
+                                                    gia.append(giaspsize);
+                                                },
+                                                error: function (xhr, status, error) {
+                                                    console.error('Lỗi khi lấy dữ liệu kích cỡ:', error);
+                                                }
+                                            });
+
+                                            // Update last clicked size
+                                            lastClickedSize = selectedSize;
+                                        });
+                                    },
+                                    error: function (xhr, status, error) {
+                                        console.error('Lỗi khi lấy dữ liệu kích cỡ:', error);
+                                    }
+                                });
+                            });
+                        },
+                        error: function (xhr, status, error) {
+                            console.error('Lỗi khi lấy dữ liệu bổ sung:', error);
+                        }
+                    });
+
+                    $.ajax({
+                        url: `http://localhost:3000/kichco/${idsp}`,
+                        method: 'GET',
+                        data: {anh: encodeURIComponent(data.anh)},
+                        success: function (sizes) {
+                            const sizeDiv = $('<div class="size-container"></div>');
+                            sizes.forEach(size => {
+                                const sizeElement = $(`
+                                            <p>${size}</p>
+                                        `);
+                                sizeDiv.append(sizeElement);
+                            });
+
+
+                            sizesp.append(sizeDiv);
+
+
+                            $('.size-container p').on('click', function () {
+                                $('.size-container p').removeClass('selected-size');
+
+                                $(this).addClass('selected-size');
+                                var validateSizeP = document.querySelector('.validatesize');
+                                validateSizeP.style.display = 'none';
+                                validateSizeP.style.color = 'red';
+                                const selectedSize = $(this).text();
+                                sizecheck = selectedSize;
+                                document.getElementById('themgiohang').addEventListener('click', function () {
+                                    if (anhcheck == null) {
+                                        var validateSizeP = document.querySelector('.validatemau');
+                                        validateSizeP.style.display = 'block';
+                                        validateSizeP.style.color = 'red';
+                                    }
+
+                                });
+                                document.getElementById('muangay').addEventListener('click', function () {
+                                    if (anhcheck == null) {
+                                        var validateSizeP = document.querySelector('.validatemau');
+                                        validateSizeP.style.display = 'block';
+                                        validateSizeP.style.color = 'red';
+                                    }
+                                });
+                            });
+                        },
+                        error: function (xhr, status, error) {
+                            console.error('Lỗi khi lấy dữ liệu kích cỡ:', error);
+                        }
+                    });
+                } else {
+                    productsContainer.append('<p>Không có dữ liệu sản phẩm.</p>');
+                }
+            },
+            error: function (xhr, status, error) {
+                console.error('Lỗi khi lấy dữ liệu:', error);
+                $('#products-list').append('<p>Đã xảy ra lỗi khi lấy dữ liệu sản phẩm.</p>');
+            }
+        });
+    });
+
+
+</script>
+
+
+<script src="https://cdn.jsdelivr.net/npm/chocolat@0.7.0/dist/js/chocolat.min.js"></script>
+<script th:src="@{/assets/js/plugins.js}"></script>
+<script th:src="@{/assets/js/client.js}"></script>
+<script th:src="@{/assets/js/script.js}"></script>
+<script th:src="@{/assets/js/Header.js}"></script>
+
+
+<div th:replace="~{client/fragmentsClient/footer :: footer}"></div>
+</body>
+
+</html>

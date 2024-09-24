@@ -1,0 +1,181 @@
+.form-container {
+    position: relative;
+    border: 2px solid #007bff;
+    border-radius: 10px;
+    padding: 20px;
+    margin: 20px auto;
+    max-width: 1285px;
+    width: 115%;
+    box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 0.1);
+    background-color: #f9f9f9;
+}
+
+.form-container::before {
+    content: "Thêm mới sản phẩm";
+    position: absolute;
+    top: -20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #f9f9f9;
+    padding: 0 10px;
+    font-size: 24px;
+    font-weight: bold;
+    color: #007bff;
+}
+
+.form-subtitle {
+    text-align: center;
+    margin-top: 20px;
+    margin-bottom: 10px;
+    font-size: 24px;
+    font-weight: bold;
+    color: #51585e;
+    text-shadow: 1px 1px 2px pink;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea{
+    width: 100%;
+    padding: 8px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+}
+
+.form-actions {
+    text-align: right;
+    margin-top: 20px;
+}
+
+.form-actions button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    background-color: #007bff;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+    margin-left: 10px;
+    min-width: 120px;
+    max-width: 200px;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+.form-actions button:hover {
+    background-color: #0056b3;
+}
+
+
+.form-title {
+    display: none;
+}
+
+.selected-items {
+    margin-top: 15px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 10px;
+    max-width: 100%;
+}
+
+.selected-items label {
+    display: inline-block;
+    margin: 0;
+    padding: 5px 10px;
+    background-color: #007bff;
+    color: white;
+    border-radius: 5px;
+    white-space: nowrap;
+}
+
+#selectedSizes,
+#selectedColors {
+    margin-left: 15px;
+    max-width: calc(100% - 30px);
+}
+
+.selected-items label:nth-child(7n+1) {
+    flex-basis: 100%;
+}
+
+
+.create-product-btn {
+    display: block;
+    margin: 20px 0 0 auto;
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.create-product-btn:hover {
+    background-color: #0056b3;
+}
+
+.image-preview img {
+    max-width: 60px;
+    max-height: 100px;
+    margin-right: 10px;
+    margin-bottom: 10px;
+}
+
+.color-modal-body {
+    max-height: 300px;
+    overflow-y: auto;
+    padding-right: 15px;
+}
+
+.color-container {
+    display: flex;
+    align-items: center;
+}
+
+.custom-btn {
+    width: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+}
+
+.custom-icon {
+    font-size: 1.5rem
+}
+.notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background-color: #4CAF50;
+    color: white;
+    padding: 15px;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    display: none;
+    z-index: 1000;
+}
+
+.notification .progress-bar {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 5px;
+    background-color: #fff;
+    transition: width 3s linear;
+}
+

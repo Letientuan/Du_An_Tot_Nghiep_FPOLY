@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <title>Danh Sách Khách Hàng</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/5.3.0/css/bootstrap.min.css" integrity="sha384-MzoFVv2C3MvAuzjWuqzYZHzjNzn1Siq0QCkdz3XrgvDMy02CzU+y6L7e1EJ9UJnN" crossorigin="anonymous">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+</head>
+<body>
+<div class="container mt-4">
+    <h2 class="text-center mb-4">Danh Sách Khách Hàng</h2>
+    <table class="table table-striped table-hover">
+        <thead class="text-center">
+        <tr>
+            <th>Tên Thành Phố</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="listDC, status : ${listDC}" class="text-center">
+            <td th:text="${status.index + 1}"></td>
+            <td th:text="${listDC.thanhPho}"></td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+
+
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script th:src="@{/assets/js/KhachHang.js}"></script>
+<link rel="stylesheet" th:href="@{/assets/css/KhachHang.css}"/>
+</body>
+</html>

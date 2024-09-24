@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thống kê</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="icon" type="image/svg+xml"
+          href="https://bizweb.dktcdn.net/100/048/601/themes/734017/assets/index-cate-icon-4.png?1610907247309"/>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+    <head th:replace="~{admin/fragments/head :: head}"></head>
+    <style>
+        .legend-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            font-size: 0.75rem;
+        }
+        .legend-color-box {
+            width: 1rem;
+            height: 1rem;
+            margin-right: 0.5rem;
+            border-radius: 0.25rem;
+        }
+        .h-60 {
+            height: 15rem;
+        }
+
+
+    </style>
+</head>
+<body class="bg-gray-100">
+<div class="flex transform scale-70 origin-top-left">
+    <!-- Sidebar Start -->
+    <div th:replace="~{admin/fragments/sidebar :: sidebar}" class="w-64 bg-white shadow-md"></div>
+    <!-- Sidebar End -->
+
+    <!-- Content Start -->
+    <div class="content flex-grow ml-64 p-6 bg-gray-200">
+        <!-- Navbar Start -->
+        <nav th:replace="~{admin/fragments/navbar :: nav}" class="mb-6"></nav>
+        <!-- Navbar End -->
+
+        <!-- Main Content -->
+        <div class="flex items-center mb-6">
+            <div class="mr-4">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-8 h-8 text-gray-700">
+                    <path fill-rule="evenodd" d="M2.25 2.25a.75.75 0 0 0 0 1.5H3v10.5a3 3 0 0 0 3 3h1.21l-1.172 3.513a.75.75 0 0 0 1.424.474l.329-.987h8.418l.33.987a.75.75 0 0 0 1.422-.474l-1.17-3.513H18a3 3 0 0 0 3-3V3.75h.75a.75.75 0 0 0 0-1.5H2.25Zm6.54 15h6.42l.5 1.5H8.29l.5-1.5Zm8.085-8.995a.75.75 0 1 0-.75-1.299 12.81 12.81 0 0 0-3.558 3.05L11.03 8.47a.75.75 0 0 0-1.06 0l-3 3a.75.75 0 1 0 1.06 1.06l2.47-2.47 1.617 1.618a.75.75 0 0 0 1.146-.102 11.312 11.312 0 0 1 3.612-3.321Z" clip-rule="evenodd" />
+                </svg>
+            </div>
+            <h2 class="text-3xl font-bold text-gray-800">Thống kê</h2>
+        </div>
+
+        <div class="w-[94%] ml-[3%]">
+            <!-- Stats Cards -->
+            <div class="bg-white p-6 rounded-lg shadow-md mb-6">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="bg-gray-200 rounded-lg p-6 flex-1">
+                        <span class="font-bold text-2xl block mb-2 text-gray-700">Doanh số hôm nay</span>
+                        <div class="font-bold text-xl">
+                            <span id="thongKeDonHangHomNay" class="mr-2">0</span>/
+                            <span id="thongKeDoanhThuHomNay">0</span>
+                        </div>
+                    </div>
+                    <div class="bg-gray-200 rounded-lg p-6 flex-1">
+                        <span class="font-bold text-2xl block mb-2 text-gray-700">Doanh số tháng này</span>
+                        <div class="font-bold text-xl">
+                            <span id="thongKeDonHangThangNay" class="mr-2">0</span>/
+                            <span id="thongKeDoanhThuThangNay">0</span>
+                        </div>
+                    </div>
+                    <div class="bg-gray-200 rounded-lg p-6 flex-1">
+                        <span class="font-bold text-2xl block mb-2 text-gray-700">Doanh số năm nay</span>
+                        <div class="font-bold text-xl">
+                            <span id="thongKeDonHangNamNay" class="mr-2">0</span>/
+                            <span id="thongKeDoanhThuNamNay">0</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts and Filters (not scaled down) -->
+            <div class="bg-white p-6 rounded-lg shadow-md mb-6">
+                <div class="text-2xl font-bold mb-6 text-center">Biểu đồ thống kê hóa đơn và sản phẩm</div>
+                <div class="flex flex-col lg:flex-row lg:justify-between lg:items-center mb-6">
+                    <div class="flex flex-col lg:flex-row items-center mb-4 lg:mb-0">
+                        <div class="flex items-center mb-4 lg:mb-0 lg:mr-4">
+                            <label for="startDate" class="mr-2 font-semibold text-gray-700">Ngày bắt đầu:</label>
+                            <input type="datetime-local" id="startDate" name="startDate" class="border border-gray-300 rounded p-2 focus:outline-none focus:ring-2 focus:ring-green-500">
+                        </div>
+                        <div class="flex items-center mb-4 lg:mb-0 lg:mr-4">
+                            <label for="endDate" class="mr-2 font-semibold text-gray-700">Ngày kết thúc:</label>
+                            <input type="datetime-local" id="endDate" name="endDate" class="border border-gray-300 rounded p-2 focus:outline-none focus:ring-2 focus:ring-green-500">
+                        </div>
+                    </div>
+                    <div class="flex flex-wrap lg:flex-nowrap gap-4">
+                        <button id="apply-dates" class="px-6 py-3 bg-green-500 text-white rounded-lg shadow hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-300">Áp dụng</button>
+                        <button id="last-7-days" class="px-6 py-3 bg-blue-500 text-white rounded-lg shadow hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300">7 ngày</button>
+                        <button id="last-month" class="px-6 py-3 bg-blue-500 text-white rounded-lg shadow hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300">1 tháng</button>
+                        <button id="export-excel" class="px-6 py-3 bg-gray-500 text-white rounded-lg shadow hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-300">Xuất Excel</button>
+                    </div>
+                </div>
+                <div id="date-range-display" class="mb-4 text-lg font-semibold text-gray-800 text-center"></div>
+                <div class="relative w-full">
+                    <canvas id="invoiceChartBar" class="w-full h-80"></canvas>
+                </div>
+            </div>
+
+            <!-- Order Status -->
+            <div class="bg-white p-6 rounded-lg shadow-md mb-6">
+                <div class="text-2xl font-bold mb-6 text-center">Trạng thái đơn hàng</div>
+                <div class="relative flex justify-center items-center w-full">
+                    <div class="w-[40%] mr-6">
+                        <canvas id="invoiceChartDoughnut" class="w-full h-60"></canvas>
+                    </div>
+                    <div id="legend" class="legend-container"></div>
+                </div>
+            </div>
+
+            <!-- Product Tables -->
+            <div class="flex flex-col lg:flex-row gap-6">
+                <!-- Best Selling Products -->
+                <div class="bg-gray-100 p-6 rounded-lg shadow-md flex-1">
+                    <div class="text-2xl font-bold mb-6 text-center">Sản phẩm bán chạy nhất</div>
+                    <table id="tableDanhSachSanPham" class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-blue-500">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">STT</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">Ảnh</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">Tên Sản Phẩm</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">Giá Bán</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">Số Lượng đã bán</th>
+                        </tr>
+                        </thead>
+                        <tbody id="danhSachSanPham" class="bg-white divide-y divide-gray-200"></tbody>
+                    </table>
+                </div>
+
+                <!-- Low Stock Products -->
+                <div class="bg-gray-100 p-6 rounded-lg shadow-md flex-1">
+                    <div class="text-2xl font-bold mb-6 text-center">Sản phẩm sắp hết hàng</div>
+                    <table id="tabledanhSachSanPhamSapHetHang" class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-blue-500">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">STT</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">Ảnh</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">Tên Sản Phẩm</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">Giá Bán</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">Số lượng còn lại</th>
+                        </tr>
+                        </thead>
+                        <tbody id="danhSachSanPhamSapHetHang" class="bg-white divide-y divide-gray-200"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        </div>
+
+    </div>
+
+    <!-- Content End -->
+</div>
+</body>
+
+<script>
+    let chartInstanceBar = null;
+    let chartInstanceDoughnut = null;
+
+
+
+    function fetchBarChartData(startDate, endDate) {
+        const url = `/api/hoa-don/bar-chart-data?startDate=${encodeURIComponent(startDate)}&endDate=${encodeURIComponent(endDate)}`;
+        return $.ajax({
+            url: url,
+            method: 'GET',
+            dataType: 'json'
+        }).fail(function(jqXHR, textStatus, errorThrown) {
+            console.error('Error fetching bar chart data:', textStatus, errorThrown);
+            alert('Failed to fetch bar chart data. Check the console for more details.');
+        });
+    }
+
+    function fetchDoughnutChartData() {
+        const url = '/api/hoa-don/doughnut-chart-data';
+        return $.ajax({
+            url: url,
+            method: 'GET',
+            dataType: 'json'
+        }).fail(function(jqXHR, textStatus, errorThrown) {
+            console.error('Error fetching doughnut chart data:', textStatus, errorThrown);
+            alert('Failed to fetch doughnut chart data. Check the console for more details.');
+        });
+    }
+
+    function getDates(startDate, endDate) {
+        const dates = [];
+        for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+            dates.push(new Date(d).toISOString().split('T')[0]);
+        }
+        return dates;
+    }
+
+    function formatDateToUTC(date) {
+        const d = new Date(date);
+        d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+        return d.toISOString().split('T')[0];
+    }
+
+    function updateBarChart(startDate, endDate) {
+        const dates = getDates(new Date(startDate), new Date(endDate));
+        let invoiceCounts = new Array(dates.length).fill(0);
+        let productCounts = new Array(dates.length).fill(0);
+
+        fetchBarChartData(startDate, endDate).done(function(data) {
+            const invoicesByDate = {};
+
+            data.forEach(invoice => {
+                if (invoice.hoaDon.trangThai === 6) {
+                    let dateString = formatDateToUTC(invoice.hoaDon.ngayThanhToan);
+                    if (!invoicesByDate[dateString]) {
+                        invoicesByDate[dateString] = { uniqueIds: new Set(), productCount: 0 };
+                    }
+                    invoicesByDate[dateString].uniqueIds.add(invoice.hoaDon.id);
+                    invoicesByDate[dateString].productCount += invoice.soLuong;
+                }
+            });
+
+            dates.forEach(date => {
+                if (invoicesByDate[date]) {
+                    invoiceCounts[dates.indexOf(date)] = invoicesByDate[date].uniqueIds.size;
+                    productCounts[dates.indexOf(date)] = invoicesByDate[date].productCount;
+                }
+            });
+
+            if (chartInstanceBar) {
+                chartInstanceBar.destroy();
+            }
+
+            var ctxBar = document.getElementById('invoiceChartBar').getContext('2d');
+            chartInstanceBar = new Chart(ctxBar, {
+                type: 'bar',
+                data: {
+                    labels: dates,
+                    datasets: [
+                        {
+                            label: 'Hóa đơn',
+                            data: invoiceCounts,
+                            backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                            borderColor: 'rgba(54, 162, 235, 0.5)',
+                            borderWidth: 1
+                        },
+                        {
+                            label: 'Sản phẩm',
+                            data: productCounts,
+                            backgroundColor: 'rgba(255, 99, 132, 0.5)',
+                            borderColor: 'rgba(255, 99, 132, 0.5)',
+                            borderWidth: 1
+                        }
+                    ]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+            updateDateRangeDisplay(startDate, endDate);
+        });
+    }
+
+    function exportToExcel(dates, invoiceCounts, productCounts) {
+        // Tạo dữ liệu cho sheet
+        const ws_data = [
+            ['Ngày', 'Số hóa đơn', 'Số sản phẩm'],
+            ...dates.map((date, index) => [date, invoiceCounts[index], productCounts[index]])
+        ];
+
+        // Tạo workbook và sheet
+        const wb = XLSX.utils.book_new();
+        const ws = XLSX.utils.aoa_to_sheet(ws_data);
+        XLSX.utils.book_append_sheet(wb, ws, 'Dữ liệu');
+
+        // Xuất file Excel
+        XLSX.writeFile(wb, 'thong_ke.xlsx');
+    }
+
+    $('#export-excel').click(function() {
+        const startDate = $('#startDate').val();
+        const endDate = $('#endDate').val();
+        if (startDate && endDate) {
+            const dates = getDates(new Date(startDate), new Date(endDate));
+            fetchBarChartData(startDate, endDate).done(function(data) {
+                const invoicesByDate = {};
+                data.forEach(invoice => {
+                    if (invoice.hoaDon.trangThai === 6) {
+                        let dateString = formatDateToUTC(invoice.hoaDon.ngayThanhToan);
+                        if (!invoicesByDate[dateString]) {
+                            invoicesByDate[dateString] = { uniqueIds: new Set(), productCount: 0 };
+                        }
+                        invoicesByDate[dateString].uniqueIds.add(invoice.hoaDon.id);
+                        invoicesByDate[dateString].productCount += invoice.soLuong;
+                    }
+                });
+                let invoiceCounts = dates.map(date => invoicesByDate[date] ? invoicesByDate[date].uniqueIds.size : 0);
+                let productCounts = dates.map(date => invoicesByDate[date] ? invoicesByDate[date].productCount : 0);
+                exportToExcel(dates, invoiceCounts, productCounts);
+            });
+        } else {
+            alert('Vui lòng chọn ngày bắt đầu và ngày kết thúc.');
+        }
+    });
+
+    function updateChartAndDisplay(period) {
+        const { startDate, endDate } = getDateRange(period);
+        $('#startDate').val(startDate);
+        $('#endDate').val(endDate);
+        updateBarChart(startDate, endDate);
+        updateDateRangeDisplay(startDate, endDate);
+    }
+
+    function updateDateRangeDisplay(startDate, endDate) {
+        const displayElement = document.getElementById('date-range-display');
+        const formattedStartDate = new Date(startDate).toLocaleDateString();
+        const formattedEndDate = new Date(endDate).toLocaleDateString();
+        displayElement.textContent = `Biểu đồ hiển thị ${formattedStartDate} đến ngày ${formattedEndDate}`;
+    }
+
+    function updateDoughnutChart() {
+        fetchDoughnutChartData().done(function(data) {
+            // Đếm số lượng đơn hàng theo trạng thái
+            const statusCount = {
+                8: 0, // Hóa Đơn Chờ
+                1: 0, // Chờ Xác Nhận
+                2: 0, // Xác Nhận
+                3: 0, // Chờ Vận Chuyển
+                4: 0, // Vận Chuyển
+                5: 0, // Đã Thanh Toán
+                6: 0, // Thành Công
+                7: 0  // Đã Hủy
+            };
+
+            data.forEach(order => {
+                const status = order.trangThai;
+                if (statusCount.hasOwnProperty(status)) {
+                    statusCount[status]++;
+                }
+            });
+
+            if (chartInstanceDoughnut) {
+                chartInstanceDoughnut.destroy();
+            }
+
+            var ctxDoughnut = document.getElementById('invoiceChartDoughnut').getContext('2d');
+            chartInstanceDoughnut = new Chart(ctxDoughnut, {
+                type: 'doughnut',
+                data: {
+                    labels: [
+                        'Hóa Đơn Chờ',
+                        'Chờ Xác Nhận',
+                        'Xác Nhận',
+                        'Chờ Vận Chuyển',
+                        'Vận Chuyển',
+                        'Đã Thanh Toán',
+                        'Thành Công',
+                        'Đã Hủy'
+                    ],
+                    datasets: [{
+                        data: [
+                            statusCount[8], // Hóa Đơn Chờ
+                            statusCount[1], // Chờ Xác Nhận
+                            statusCount[2], // Xác Nhận
+                            statusCount[3], // Chờ Vận Chuyển
+                            statusCount[4], // Vận Chuyển
+                            statusCount[5], // Đã Thanh Toán
+                            statusCount[6], // Thành Công
+                            statusCount[7]  // Đã Hủy
+                        ],
+                        backgroundColor: [
+                            '#6B7280',
+                            '#004d40',
+                            '#facc15',
+                            '#f97316',
+                            '#047857',
+                            '#047857',
+                            '#3b82f6',
+                            '#dc2626'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(tooltipItem) {
+                                    let label = tooltipItem.label || '';
+                                    let value = tooltipItem.raw || 0;
+                                    let total = tooltipItem.chart._metasets[0].total;
+                                    let percentage = ((value / total) * 100).toFixed(2) + '%';
+                                    return label + ': ' + percentage;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            updateLegend(statusCount);
+        });
+    }
+
+
+    function updateLegend(statusCount) {
+        const legendContainer = $('#legend');
+        legendContainer.empty();
+
+        const statusLabels = [
+            'Hóa Đơn Chờ',
+            'Chờ Xác Nhận',
+            'Xác Nhận',
+            'Chờ Vận Chuyển',
+            'Vận Chuyển',
+            'Đã Thanh Toán',
+            'Thành Công',
+            'Đã Hủy'
+        ];
+
+        const colors = [
+            '#6B7280',
+            '#004d40',
+            '#facc15',
+            '#f97316',
+            '#047857',
+            '#047857',
+            '#3b82f6',
+            '#dc2626'
+        ];
+
+        statusLabels.forEach((label, index) => {
+            const color = colors[index];
+            const count = statusCount[index + 1] || 0;
+            const percentage = ((count / Object.values(statusCount).reduce((a, b) => a + b, 0)) * 100).toFixed(2) + '%';
+
+            const legendItem = $(`<div class="legend-item">
+                <div class="legend-color-box" style="background-color: ${color};"></div>
+                <span>${label}: ${count} (${percentage})</span>
+            </div>`);
+
+            legendContainer.append(legendItem);
+        });
+    }
+
+    $(document).ready(function() {
+
+        function formatTongSoDonHang(tongSoHoaDon) {
+            return `${tongSoHoaDon} đơn hàng`;
+        }
+
+        const formatVND = (tongtien) => {
+            // Làm tròn xuống nếu là số thập phân để không thêm dấu chấm vào phần thập phân
+            const integerPart = Math.floor(tongtien);
+
+            // Sử dụng replace để thêm dấu chấm vào từng nhóm 3 chữ số
+            return integerPart.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".") + ' VNĐ';
+        }
+
+        getDoanhThuHomNay();
+        getDoanhThuThangHienTai();
+        getDoanhThuNamHienTai();
+
+        function getDoanhThuNamHienTai() {
+            $.ajax({
+                url: '/api/hoa-don/doanh-thu-nam-hien-tai',
+                type: 'GET',
+                success: function(response) {
+                    console.log('Dữ liệu doanh thu năm hiện tại:', response); // Kiểm tra dữ liệu
+                    let tongSoHoaDon = response.length;
+                    let tongTien = response.reduce((total, hoaDon) => total + hoaDon.tongTien, 0);
+
+                    $('#thongKeDonHangNamNay').text(formatTongSoDonHang(tongSoHoaDon));
+                    $('#thongKeDoanhThuNamNay').text(formatVND(tongTien));
+
+                    console.log('Doanh thu năm hiện tại:', tongSoHoaDon, tongTien);
+                },
+                error: function(error) {
+                    console.error('Lỗi khi lấy doanh thu năm hiện tại:', error);
+                }
+            });
+        }
+
+        function getDoanhThuHomNay() {
+            $.ajax({
+                url: '/api/hoa-don/doanh-thu-hom-nay',
+                type: 'GET',
+                success: function(response) {
+                    console.log('Dữ liệu doanh thu hôm nay:', response); // Kiểm tra dữ liệu
+                    let tongSoHoaDon = response.length;
+                    let tongTien = response.reduce((total, hoaDon) => total + hoaDon.tongTienSauGiam, 0);
+
+                    $('#thongKeDonHangHomNay').text(formatTongSoDonHang(tongSoHoaDon));
+                    $('#thongKeDoanhThuHomNay').text(formatVND(tongTien));
+
+                    console.log('Doanh thu hôm nay:', tongSoHoaDon, tongTien);
+                },
+                error: function(error) {
+                    console.error('Lỗi khi lấy doanh thu hôm nay:', error);
+                }
+            });
+        }
+
+        function getDoanhThuThangHienTai() {
+            $.ajax({
+                url: '/api/hoa-don/doanh-thu-thang-hien-tai',
+                type: 'GET',
+                success: function(response) {
+                    console.log('Dữ liệu doanh thu tháng hiện tại:', response); // Kiểm tra dữ liệu
+                    let tongSoHoaDon = response.length;
+                    let tongTien = response.reduce((total, hoaDon) => total + hoaDon.tongTien, 0);
+
+                    $('#thongKeDonHangThangNay').text(formatTongSoDonHang(tongSoHoaDon));
+                    $('#thongKeDoanhThuThangNay').text(formatVND(tongTien));
+
+                    console.log('Doanh thu tháng hiện tại:', tongSoHoaDon, tongTien);
+                },
+                error: function(error) {
+                    console.error('Lỗi khi lấy doanh thu tháng hiện tại:', error);
+                }
+            });
+        }
+
+
+        function getDateRange(period) {
+            const endDate = new Date();
+            let startDate;
+
+            switch (period) {
+                case 'last-7-days':
+                    startDate = new Date();
+                    startDate.setDate(endDate.getDate() - 6);
+                    break;
+                case 'last-month':
+                    startDate = new Date();
+                    startDate.setMonth(endDate.getMonth() - 1);
+                    break;
+                case 'last-year':
+                    startDate = new Date();
+                    startDate.setMonth(0);
+                    startDate.setDate(1);
+                    endDate.setMonth(11);
+                    endDate.setDate(31);
+                    break;
+                default:
+                    startDate = new Date();
+                    startDate.setDate(endDate.getDate() - 6);
+                    break;
+            }
+
+            return {
+                startDate: startDate.toISOString(),
+                endDate: endDate.toISOString()
+            };
+        }
+
+        const initialRange = getDateRange('last-7-days');
+        updateBarChart(initialRange.startDate, initialRange.endDate);
+        updateDoughnutChart();
+
+        $('#last-7-days').click(function() {
+            const range = getDateRange('last-7-days');
+            updateBarChart(range.startDate, range.endDate);
+        });
+
+        $('#last-month').click(function() {
+            const range = getDateRange('last-month');
+            updateBarChart(range.startDate, range.endDate);
+        });
+
+        $('#last-year').click(function() {
+            const range = getDateRange('last-year');
+            updateBarChart(range.startDate, range.endDate);
+        });
+
+        $('#apply-dates').click(function() {
+            const startDate = $('#startDate').val();
+            const endDate = $('#endDate').val();
+            if (startDate && endDate) {
+                updateBarChart(startDate, endDate);
+            } else {
+                alert('Vui lòng chọn ngày bắt đầu và ngày kết thúc.');
+            }
+        });
+        getDanhSachSanPham();
+        getSanPhamSapHetHang();
+
+    });
+
+    function formatVND(num) {
+        return num.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' });
+    }
+
+
+    function getDanhSachSanPham() {
+        $.ajax({
+            url: `/api/hoa-don/san-pham-ban-chay-nhat`,
+            method: 'GET',
+            success: function (result) {
+                if (Array.isArray(result)) {
+                    let list = "";
+                    $("#danhSachSanPham").empty();
+
+                    for (let i = 0; i < result.length; i++) {
+                        let sanPham = result[i];
+                        list += `
+                    <tr>
+                        <td class="px-6 py-4 whitespace-nowrap">${i + 1}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <img src="${sanPham.anh}" class="w-16 h-auto">
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap font-bold">
+                            <h1>${sanPham.ten}</h1>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">${formatVND(sanPham.giaBan)}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">${sanPham.tongSoLuong}</td>
+                    </tr>`;
+                    }
+
+                    $("#danhSachSanPham").html(list);
+                } else {
+                    console.error("Dữ liệu trả về không hợp lệ.");
+                    $("#danhSachSanPham").html("<tr><td colspan='5' class='text-center'>Không có sản phẩm nào.</td></tr>");
+                }
+            },
+            error: function (xhr, status, error) {
+                console.error("Lỗi khi tải danh sách sản phẩm:", error);
+                $("#danhSachSanPham").html("<tr><td colspan='5' class='text-center'>Không thể tải danh sách sản phẩm.</td></tr>");
+            }
+        });
+    }
+
+
+    function getSanPhamSapHetHang() {
+        $.ajax({
+            url: `/api/hoa-don/san-pham-sap-het-hang`,
+            method: 'GET',
+            success: function (result) {
+                if (Array.isArray(result)) {
+                    let list = "";
+                    $("#danhSachSanPhamSapHetHang").empty();
+
+                    for (let i = 0; i < result.length; i++) {
+                        let sanPham = result[i];
+                        list += `
+                    <tr>
+                        <td class="px-6 py-4 whitespace-nowrap">${i + 1}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <img src="${sanPham.anh}" class="w-16 h-auto">
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap font-bold">
+                            <h1>${sanPham.ten}</h1>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">${formatVND(sanPham.giaBan)}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">${sanPham.soLuong}</td>
+                    </tr>`;
+                    }
+
+                    $("#danhSachSanPhamSapHetHang").html(list);
+                } else {
+                    console.error("Dữ liệu trả về không hợp lệ.");
+                    $("#danhSachSanPhamSapHetHang").html("<tr><td colspan='5' class='text-center'>Không có sản phẩm nào.</td></tr>");
+                }
+            },
+            error: function (xhr, status, error) {
+                console.error("Lỗi khi tải danh sách sản phẩm:", error);
+                $("#danhSachSanPhamSapHetHang").html("<tr><td colspan='5' class='text-center'>Không thể tải danh sách sản phẩm.</td></tr>");
+            }
+        });
+    }
+
+
+
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
+<script th:src="@{/assets/js/main.js}"></script>
+</body>
+</html>

@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <link rel="icon" type="image/svg+xml"
+          href="https://bizweb.dktcdn.net/100/048/601/themes/734017/assets/index-cate-icon-4.png?1610907247309"/>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" th:href="@{/assets/css/Login.css}">
+    <title>Login</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" integrity="sha512-EU15Mvcd1FQOZaJKLhPnPU1mCp7NlqNd9UKf2YiQ1mRJpYbL2q77E96vD6bINd6F6QbKivt20+ufyK8NEPZhcw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+</head>
+<style>
+    /* Thu nhỏ container */
+    #container {
+        width: 80%; /* Thu nhỏ kích thước container */
+        max-width: 1000px;
+        min-height: 600px;
+        overflow: hidden;
+        position: relative;
+        border-radius: 10px; /* Bo tròn container */
+        box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25),
+        0 10px 10px rgba(0, 0, 0, 0.22);
+    }
+
+    /* Bo tròn các nút */
+    button, .ghost {
+        border-radius: 20px;
+        border: 1px solid #ff4b2b;
+        background-color: #ff4b2b;
+        color: #ffffff;
+        font-size: 12px;
+        font-weight: bold;
+        padding: 12px 45px;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        transition: transform 80ms ease-in;
+    }
+
+    /* Khoảng cách giữa các input */
+    .form-control {
+        margin-bottom: 15px; /* Thêm khoảng cách giữa các input */
+    }
+    #forgotPasswordModal {
+        display: none;
+    }
+
+    /*!* Bo tròn các input *!*/
+    /*input[type="text"], input[type="email"], input[type="password"] {*/
+    /*    border-radius: 5px;*/
+    /*    padding: 10px;*/
+    /*}*/
+
+    /*.see-custom .text-orange-bold {*/
+    /*    font-size: 2.5rem; !* Kích thước giống với thẻ h1 *!*/
+    /*    color: #FF5722; !* Màu cam đậm *!*/
+    /*    font-weight: bold;*/
+    /*}*/
+    /*.see-custom .text-orange-light {*/
+    /*    font-size: 2.5rem; !* Kích thước giống với thẻ h1 *!*/
+    /*    color: #FFA726; !* Màu cam nhạt *!*/
+    /*    font-weight: normal;*/
+    /*}*/
+    .error {
+        color: red;
+        font-size: 12px;
+        padding-bottom: 4px;
+        text-align: left;
+    }
+    .notification {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background-color: #4CAF50;
+        color: white;
+        padding: 15px;
+        border-radius: 5px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        display: none; /* Ẩn ban đầu */
+        z-index: 1000;
+    }
+
+    .notification.show {
+        display: block; /* Hiển thị khi có thông báo */
+        animation: fadeOut 3s ease-out forwards; /* Animation fadeOut */
+    }
+
+</style>
+<body>
+<div class="container" id="container">
+    <div class="form-container sign-up-container">
+        <form th:action="@{/loginadd}" method="post" onsubmit="return validateForm();">
+            <h1 style="margin-bottom: 10px">Đăng ký</h1>
+            <input type="text" id="ten" name="ten" class="form-control" placeholder="Họ và tên"
+                   oninput="validateForm()"/>
+            <div id="tenError" class="error"></div>
+
+            <input type="email" id="email" name="email" class="form-control"
+                   placeholder="Email" onblur="checkEmail()" oninput="validateForm()"/>
+            <div id="emailError" class="error"></div>
+
+            <input type="password" id="matKhau" name="matKhau" class="form-control"
+                   placeholder="Mật Khẩu" oninput="validateForm()"/>
+            <div id="matKhauError" class="error"></div>
+
+            <input type="password" id="matKhaulai" name="matKhaulai" class="form-control"
+                   placeholder="Nhập lại mật khẩu" oninput="validateForm()"/>
+            <div id="matKhaulaiError" class="error"></div>
+
+            <!-- Đổi ID của nút "Đăng Ký" để dễ quản lý -->
+            <button id="confirmButton" style="border-radius: 25px" type="button">Đăng Ký</button>
+        </form>
+    </div>
+    <div class="form-container sign-in-container">
+        <form th:action="@{/logincheck}" method="post"onsubmit="return validateForm1();">
+
+            <h1 style="margin-bottom: 10px">Đăng Nhập</h1>
+            <input type="email" id="emaillong" name="email" class="form-control"
+                   placeholder="Email" oninput="validateForm1()"/>
+            <div id="emaillongError" class="error"></div>
+            <input type="password" id="matKhaulong" name="matKhau" class="form-control"
+                   placeholder="Mật Khẩu" oninput="validateForm1()"/>
+            <div id="matKhaulongError" class="error"></div>
+            <div th:if="${error}">
+                <p style="color: red;">Email và mật khẩu không hợp lệ</p>
+            </div>
+            <div class="col-md-6 d-flex justify-content-center" style="margin-bottom: 10px">
+                <a href="#" id="forgotPasswordLink">Forgot password?</a>
+            </div>
+            <button style="border-radius: 25px" type="submit">Đăng Nhập</button>
+        </form>
+    </div>
+    <div class="overlay-container">
+        <div class="overlay">
+            <div class="overlay-panel overlay-left">
+                <h1>ShoeSee</h1>
+                <h1>Xin Chào</h1>
+                <p>Đăng ký tài khoản để nhận nhiều ưu đãi mới</p>
+                <button class="ghost" id="signIn">Đăng Nhập</button>
+            </div>
+            <div class="overlay-panel overlay-right">
+                <h1>ShoeSee</h1>
+                <h1>Chào mừng trở lại!</h1>
+                <p>Vui lòng đăng nhập!!</p>
+                <button class="ghost" id="signUp">Đăng Ký</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="notification" class="notification">
+    <span id="notification-text">Đăng Ký thành Công!!</span>
+    <div id="progress-bar" class="progress-bar"></div>
+</div>
+
+<div class="modal fade" id="forgotPasswordModal" tabindex="-1" aria-labelledby="forgotPasswordModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header"  style="background-color: orangered">
+                <h5 class="modal-title" id="forgotPasswordModalLabel" style="color: white">Forgot Password</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form action="/laylaimk" method="post">
+                    <input type="hidden" name="_csrf" value="${_csrf.token}" />
+                    <div class="mb-5">
+                        <input type="email" class="form-control" id="forgotEmail" name="email" placeholder="Email" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function validateForm() {
+        let valid = true;
+
+        // Kiểm tra Tên
+        const ten = document.getElementById('ten').value;
+        const tenError = document.getElementById('tenError');
+        if (ten.trim() === '') {
+            tenError.textContent = 'Tên không được để trống.';
+            valid = false;
+        } else {
+            tenError.textContent = '';
+        }
+
+
+        const email = document.getElementById('email').value;
+        const emailError = document.getElementById('emailError');
+        const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+        if (!emailPattern.test(email)) {
+            emailError.textContent = 'Email không hợp lệ.';
+            valid = false;
+        } else {
+            emailError.textContent = '';
+        }
+
+        
+        const matKhau = document.getElementById('matKhau').value;
+        const matKhauError = document.getElementById('matKhauError');
+        const matKhaulai = document.getElementById('matKhaulai').value;
+        const matKhaulaiError = document.getElementById('matKhaulaiError');
+        const passwordPattern = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/; // Yêu cầu mật khẩu có ít nhất 8 ký tự bao gồm chữ và số
+
+        if (!passwordPattern.test(matKhau)) {
+            matKhauError.textContent = 'Mật khẩu phải có ít nhất 8 ký tự và bao gồm cả chữ và số.';
+            valid = false;
+        } else {
+            matKhauError.textContent = '';
+        }
+
+        if (matKhaulai.trim() === '') {
+            matKhaulaiError.textContent = 'Vui lòng nhập lại mật khẩu.';
+            valid = false;
+        } else if (matKhau !== matKhaulai) {
+            matKhaulaiError.textContent = 'Mật khẩu và nhập lại mật khẩu không trùng khớp.';
+            valid = false;
+        } else {
+            matKhaulaiError.textContent = '';
+        }
+
+        return valid;
+    }
+    function validateForm1() {
+        let valid = true;
+
+        const email = document.getElementById('emaillong').value;
+        const emailError = document.getElementById('emaillongError'); // Sửa ID sai
+        const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+        if (!emailPattern.test(email)) {
+            emailError.textContent = 'Email không hợp lệ.';
+            valid = false;
+        }else if(email.trim() === ''){
+            emailError.textContent = 'Vui lòng nhập Email.';
+            valid = false;
+        }
+        else {
+            emailError.textContent = '';
+        }
+        const matKhau = document.getElementById('matKhaulong').value;
+        const matKhauError = document.getElementById('matKhaulongError');
+        if (matKhau.trim() === '') {
+            matKhauError.textContent = 'Vui lòng nhập mật khẩu.';
+            valid = false;
+        } else {
+            matKhauError.textContent = '';
+        }
+
+        return valid;
+    }
+
+    function checkEmail() {
+        const email = document.getElementById('email').value;
+        const emailError = document.getElementById('emailError');
+
+        axios.get(`/check-email?email=${email}`)
+            .then(response => {
+                console.log('Response data:', response.data); // Kiểm tra dữ liệu phản hồi từ server
+                if (response.data) { // Giả sử phản hồi là { exists: true/false }
+                    emailError.textContent = 'Email đã tồn tại.';
+                    return false;
+                } else {
+                    emailError.textContent = '';
+                    return true;
+                }
+            })
+            .catch(error => {
+                console.error('Error occurred:', error); // In lỗi ra console để kiểm tra
+                emailError.textContent = 'Lỗi kiểm tra email.';
+                return false;
+            });
+
+    }
+
+    // Gọi checkEmail() khi trường email mất focus
+    document.getElementById('email').addEventListener('blur', checkEmail);
+    const signUpButton = document.getElementById('signUp');
+    const signInButton = document.getElementById('signIn');
+    const container = document.getElementById('container');
+    signUpButton.addEventListener('click', () => {
+        container.classList.add("right-panel-active");
+    });
+
+    signInButton.addEventListener('click', () => {
+        container.classList.remove("right-panel-active");
+    });
+
+    document.getElementById("confirmButton").addEventListener("click", function () {
+        if (validateForm()) {
+            Swal.fire({
+                title: 'Bạn có chắc chắn muốn đăng ký?',
+                text: 'Thông tin của bạn sẽ được lưu trữ.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Đăng Ký',
+                cancelButtonText: 'Hủy'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    Swal.fire(
+                        'Đăng ký thành công!',
+                        'Bạn đã đăng ký thành công.',
+                        'success'
+                    ).then(() => {
+                        // Submit form nếu xác nhận thành công
+                        document.querySelector("form").submit();
+                    });
+                }
+            });
+        }
+    });
+
+</script>
+<!--modal-->
+<script>
+    // Show modal on click of forgot password link
+    document.getElementById("forgotPasswordLink").addEventListener("click", function(event) {
+        event.preventDefault(); // Ngăn chặn hành động mặc định của liên kết
+        var forgotPasswordModal = new bootstrap.Modal(document.getElementById('forgotPasswordModal'));
+        forgotPasswordModal.show();
+    });
+
+    document.addEventListener('DOMContentLoaded', function () {
+        // Close modal when clicking outside or on the close button
+        document.querySelectorAll('.modal .close').forEach(button => {
+            button.addEventListener('click', function () {
+                $('#forgotPasswordModal').modal('hide');
+            });
+        });
+
+        window.addEventListener('click', function (event) {
+            const modal = document.getElementById('forgotPasswordModal');
+            if (event.target === modal) {
+                $(modal).modal('hide');
+            }
+        });
+    });
+
+</script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</html>

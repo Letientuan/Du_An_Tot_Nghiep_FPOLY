@@ -1,0 +1,27 @@
+<!-- admin/fragments/navbar.html -->
+<nav class="navbar navbar-expand bg-light navbar-light sticky-top px-4 py-0" th:fragment="nav">
+    <a th:href="@{/}" class="navbar-brand d-flex d-lg-none me-4">
+        <h2 class="text-primary mb-0"><i class="fa fa-hashtag"></i></h2>
+    </a>
+<!--    <a href="#" class="sidebar-toggler flex-shrink-0">-->
+<!--&lt;!&ndash;        <i class="fa fa-bars"></i>&ndash;&gt;-->
+<!--    </a>-->
+
+<!--    <form class="d-none d-md-flex ms-4">-->
+<!--        <input class="form-control border-0" type="search" placeholder="Search" />-->
+<!--    </form>-->
+
+    <form class="d-none d-md-flex ms-4">
+<!--        <input class="form-control border-0" type="search" placeholder="Search" />-->
+    </form>
+    <div class="navbar-nav align-items-center ms-auto">
+        <div class="nav-item dropdown">
+
+            <div class="dropdown-menu dropdown-menu-end bg-light border-0 rounded-0 rounded-bottom m-0">
+                <a th:href="@{/profile}" class="dropdown-item">My Profile</a>
+                <a th:href="@{/settings}" class="dropdown-item">Settings</a>
+                <a th:href="@{/logout}" class="dropdown-item">Log Out</a>
+            </div>
+        </div>
+    </div>
+</nav>

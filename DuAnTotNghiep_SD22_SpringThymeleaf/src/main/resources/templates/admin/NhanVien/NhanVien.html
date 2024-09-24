@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+<div class="col-md-16 d-flex">
+
+    <div class="col-md-1"><a th:href="@{/admin/addNhanVien}" class="btn btn-primary ">+ Thêm</a></div>
+</div>
+<table class="table table-striped table-hover">
+    <thead class="bg-blue-400">
+    <tr >
+        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">STT</th>
+        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">Ảnh</th>
+        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">Mã</th>
+        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">Tên</th>
+        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">SĐT</th>
+        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">Ngày Sinh</th>
+        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">Giới Tính</th>
+        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">Email</th>
+        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">Vai Trò</th>
+        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">Trạng Thái</th>
+        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">Hành Động</th>
+    </tr>
+    </thead>
+    <tbody class="bg-white divide-y divide-gray-200 ">
+    <th:block th:if="${not #lists.isEmpty(lstNv)}">
+        <tr th:each="nhanvien, status : ${lstNv}" class="text-center">
+            <td th:text="${status.index + 1}" class="px-6 py-4 whitespace-nowrap"></td>
+            <td>
+                <img th:src="${nhanvien.anh}" class="img-thumbnail" />
+            </td>
+            <td th:text="${nhanvien.ma}" class="px-6 py-4 whitespace-nowrap"></td>
+            <td th:text="${nhanvien.ten}" class="px-6 py-4 whitespace-nowrap"></td>
+            <td th:text="${nhanvien.sdt}" class="px-6 py-4 whitespace-nowrap"></td>
+            <td th:text="${#dates.format(nhanvien.ngaySinh, 'dd/MM/yyyy')}" class="px-6 py-4 whitespace-nowrap"></td>
+            <td>
+                <span th:if="${nhanvien.gioiTinh} == true">Nam</span>
+                <span th:if="${nhanvien.gioiTinh} == false">Nữ</span>
+            </td>
+            <td th:text="${nhanvien.email}"></td>
+            <td>
+                <span th:if="${nhanvien.vaiTro == 1}">Nhân Viên</span>
+                <span th:if="${nhanvien.vaiTro == 0}">Quản Lí</span>
+            </td>
+
+            <td>
+                <label class="switch">
+                    <input type="checkbox" id="switchButton_${nhanvien.id}" data-id="${nhanvien.id}"
+                           data-trang-thai="${nhanvien.trangThai}" class="toggle-checkbox"
+                           th:checked="${nhanvien.trangThai}"
+                           th:onclick="'confirmToggle1(this, ' + ${nhanvien.id} + ')'" />
+                    <span class="slider round"></span>
+                </label>
+            </td>
+
+
+
+
+
+
+            <td class="px-6 py-4 whitespace-nowrap text-center">
+                <a th:href="@{/admin/UpdateNhanVien/{id}(id=${nhanvien.id})}" class="text-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="inline-block w-5 h-5 text-yellow-500">
+                        <path d="M10 12.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z" />
+                        <path fill-rule="evenodd" d="M.664 10.59a1.651 1.651 0 0 1 0-1.186A10.004 10.004 0 0 1 10
+                3c4.257 0 7.893 2.66 9.336 6.41.147.381.146.804 0 1.186A10.004 10.004 0 0 1 10 17c-4.257
+                0-7.893-2.66-9.336-6.41ZM14 10a4 4 0 1 1-8 0 4 4 0 0 1 8 0Z" clip-rule="evenodd" />
+                    </svg>
+                </a>
+            </td>
+
+        </tr>
+
+        <tr th:if="${#lists.isEmpty(lstNv)}">
+            <td colspan="11" class="text-center">Không có dữ liệu</td>
+        </tr>
+    </th:block>
+
+
+    </tbody>
+</table>
+<ul class="text-center">
+
+
+    <div class="btn-group" role="group">
+        <button type="button" class="btn btn-outline-primary">Previous</button>
+
+        <div id="paginationButtons" class="btn-group" role="group">
+
+            <button type="button" class="btn btn-outline-primary" th:each="page : ${#numbers.sequence(1, totalPage1)}"
+                    th:text="${page}" th:id="'pageBtn-' + ${page}" onclick="getPageNumber(this)"></button>
+        </div>
+
+        <button type="button" class="btn btn-outline-primary">Next</button>
+    </div>
+
+
+
+</ul>
+
+</html>

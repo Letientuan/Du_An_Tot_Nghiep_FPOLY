@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{admin/fragments/head :: head}">
+    <link th:href="@{/assets/css/sanPhamHienThi.css}" rel="stylesheet"/>
+    <style>
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: #4caf50;
+            color: white;
+            padding: 15px;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            display: none;
+            z-index: 1000;
+        }
+
+        .notification .progress-bar {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background-color: #fff;
+            transition: width 3s linear;
+        }
+    </style>
+</head>
+<body>
+<div id="notification" class="notification">
+    Trạng thái sản phẩm đã thay đổi
+    <div id="progress-bar" class="progress-bar"></div>
+</div>
+<!-- Sidebar Start -->
+<div th:replace="~{admin/fragments/sidebar :: sidebar}"></div>
+<!-- Sidebar End -->
+<!-- Content Start -->
+<div class="content flex-grow ml-64 p-4 bg-gray-200">
+    <!-- Navbar Start -->
+    <nav th:replace="~{admin/fragments/navbar :: nav}"></nav>
+    <!-- Navbar End -->
+
+    <h1 class="text-left text-4xl font-bold mb-4">Danh sách sản phẩm</h1>
+
+    <div class="container mx-auto bg-white h-75 w-full m-auto mt-5 p-6 rounded-lg shadow-md">
+        <h2 class="text-left text-2xl font-bold mb-4"><i class="fa-solid fa-filter"></i>Tìm kiếm</h2>
+        <form action="/admin/san-pham" method="get">
+            <div class="mb-3 row">
+                <div class="col-8">
+                    <input type="text" class="form-control" name="keyword" th:value="${keyword}" placeholder="Tìm kiếm">
+                </div>
+                <div class="col-2">
+                    <button type="submit" class="btn btn-primary w-100">Tìm kiếm</button>
+                </div>
+                <div class="col-2">
+                    <button type="button" class="btn btn-secondary w-100"
+                            onclick="window.location.href='/admin/san-pham'">Làm mới
+                    </button>
+                </div>
+
+            </div>
+        </form>
+
+    </div>
+    <div class="container mx-auto mt-3 d-flex justify-content-end">
+        <a href="/admin/san-pham-chi-tiet/add" class="btn btn-success">Thêm mới sản phẩm</a>
+    </div>
+
+    <div th:if="${!hasResultSP}" class="alert alert-info mt-3">
+        Không có kết quả tìm kiếm phù hợp.
+    </div>
+    <div th:if="${hasResultSP}" class="w-full m-auto mt-3 bg-white p-6 rounded-lg shadow-md mb-11">
+        <table class="table table-bordered" id="productTable">
+            <thead>
+            <tr>
+                <th scope="col">STT</th>
+                <th scope="col">Tên sản phẩm</th>
+                <th scope="col">Thương hiệu</th>
+                <th scope="col">Số lượng</th>
+                <th scope="col">Trạng thái</th>
+                <th scope="col">Action</th>
+                <th scope="col">Đổi trạng thái</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="sanPham, state : ${sanPhams}">
+                <th scope="row" th:text="${state.count}"></th>
+                <td th:text="${sanPham.ten}"></td>
+                <td th:text="${sanPham.thuongHieu.ten}"></td>
+                <td>
+                    <span th:if="${soLuongMap[sanPham.id] > 0}" th:text="${soLuongMap[sanPham.id]}"></span>
+                    <span th:if="${soLuongMap[sanPham.id] == 0}">Hết hàng</span>
+                </td>
+                <td>
+                    <span th:if="${sanPham.trangThai == 1}">Đang kinh doanh</span>
+                    <span th:if="${sanPham.trangThai == 0}">Ngừng kinh doanh</span>
+                </td>
+                <td>
+                    <a th:href="@{/admin/san-pham/{id}(id=${sanPham.id})}"><i class="fa-solid fa-eye"></i></a>
+                </td>
+                <td>
+                    <div class="form-check form-switch">
+                        <input class="form-check-input trang-thai-toggle" type="checkbox"
+                               th:data-id="${sanPham.id}" th:checked="${sanPham.trangThai == 1}">
+                    </div>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+        <nav th:if="${hasResultSP}">
+            <ul class="pagination justify-content-center">
+                <!-- Previous Button -->
+                <li class="page-item" th:classappend="${currentPage == 1} ? 'disabled' : ''">
+                    <a class="page-link"
+                       th:href="${currentPage > 1 ? '?keyword=' + (keyword != null ? keyword : '') + '&pageNo=' + (currentPage - 1) : '#'}">
+                        Previous
+                    </a>
+                </li>
+
+                <!-- Page Numbers -->
+                <li class="page-item" th:each="i : ${#numbers.sequence(1, totalPage)}"
+                    th:classappend="${currentPage == i} ? 'active' : ''">
+                    <a class="page-link"
+                       th:href="@{${keyword != null && keyword != '' ? '?keyword=' + keyword + '&' : '?'} + 'pageNo=' + ${i}}"
+                       th:text="${i}"></a>
+                </li>
+
+                <!-- Next Button -->
+                <li class="page-item" th:classappend="${currentPage == totalPage} ? 'disabled' : ''">
+                    <a class="page-link"
+                       th:href="${currentPage < totalPage ? '?keyword=' + (keyword != null ? keyword : '') + '&pageNo=' + (currentPage + 1) : '#'}">
+                        Next
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+    </div>
+</div>
+<!-- JavaScript Libraries -->
+<script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/postcss7-compat@latest"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<!-- Template Javascript -->
+<script th:src="@{/assets/js/main.js}"></script>
+<script th:src="@{/assets/js/sanPhamPage.js}"></script>
+</body>
+</html>

@@ -1,0 +1,11 @@
+1.Chạy File db_BaoVe
+2.chạy dự án trên IntelliJ IDEA
+3.sau khi chạy thành công
+  - vào link client : http://localhost:3000/Client
+  - vào link admin :  http://localhost:3000/admin/ban-hang-tai-quay
+4.thanh toán online bằng thẻ VNPAY
+  - Ngân hàng	        NCB
+  - Số thẻ	        9704198526191432198
+  - Tên chủ thẻ	        NGUYEN VAN A
+  - Ngày phát hành	07/15
+  - Mật khẩu OTP	123456
